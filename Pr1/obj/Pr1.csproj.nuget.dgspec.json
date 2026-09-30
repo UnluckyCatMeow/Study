@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\sered\\OneDrive\\Desktop\\studyVs\\Pr1\\Pr1\\Pr1.csproj": {}
+    "C:\\Users\\sered\\OneDrive\\Desktop\\studyBD\\Pr1\\Pr1\\Pr1.csproj": {}
   },
   "projects": {
-    "C:\\Users\\sered\\OneDrive\\Desktop\\studyVs\\Pr1\\Pr1\\Pr1.csproj": {
+    "C:\\Users\\sered\\OneDrive\\Desktop\\studyBD\\Pr1\\Pr1\\Pr1.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\sered\\OneDrive\\Desktop\\studyVs\\Pr1\\Pr1\\Pr1.csproj",
+        "projectUniqueName": "C:\\Users\\sered\\OneDrive\\Desktop\\studyBD\\Pr1\\Pr1\\Pr1.csproj",
         "projectName": "Pr1",
-        "projectPath": "C:\\Users\\sered\\OneDrive\\Desktop\\studyVs\\Pr1\\Pr1\\Pr1.csproj",
+        "projectPath": "C:\\Users\\sered\\OneDrive\\Desktop\\studyBD\\Pr1\\Pr1\\Pr1.csproj",
         "packagesPath": "C:\\Users\\sered\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\sered\\OneDrive\\Desktop\\studyVs\\Pr1\\Pr1\\obj\\",
+        "outputPath": "C:\\Users\\sered\\OneDrive\\Desktop\\studyBD\\Pr1\\Pr1\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\sered\\AppData\\Roaming\\NuGet\\NuGet.Config",

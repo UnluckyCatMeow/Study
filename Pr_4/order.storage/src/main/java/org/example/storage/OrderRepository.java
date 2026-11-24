@@ -1,43 +1,50 @@
 package org.example.storage;
 
-import org.example.model.Clothing;
-import org.example.model.Electronics;
 import org.example.model.Product;
-import net.datafaker.Faker;
+import org.example.storage.internal.ProductFactory;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class OrderRepository {
-    private final List<Product> products = new ArrayList<>();
-    private final Faker faker = new Faker();
+    private final List<Product> products = new CopyOnWriteArrayList<>();
+    private final List<Product> processedOrders = new CopyOnWriteArrayList<>();
+    private final ProductFactory factory = new ProductFactory(); // внутрішній клас модуля
 
     public void generateFakeData(int count) {
         for (int i = 0; i < count; i++) {
-            if (i % 2 == 0) {
-                Electronics electronic = Electronics.builder()
-                        .id(UUID.randomUUID().toString())
-                        .name(faker.device().modelName())
-                        .price(faker.number().randomDouble(2, 50, 2000))
-                        .brand(faker.device().manufacturer())
-                        .warrantyMonths(faker.number().numberBetween(6, 24))
-                        .build();
-                products.add(electronic);
-            } else {
-                Clothing clothing = Clothing.builder()
-                        .id(UUID.randomUUID().toString())
-                        .name(faker.commerce().productName())
-                        .price(faker.number().randomDouble(2, 10, 300))
-                        .size(faker.options().option("S", "M", "L", "XL"))
-                        .material(faker.commerce().material()) // Виправлено з faker.fabric() на commerce().material()
-                        .build();
-                products.add(clothing);
-            }
+            products.add(i % 2 == 0 ? factory.createElectronics() : factory.createClothing());
         }
     }
 
+    public void addProduct(Product product) {
+        products.add(product);
+    }
+
     public List<Product> getProducts() {
-        return products;
+        return List.copyOf(products);
+    }
+
+    /**
+     * Узагальнений метод: повертає лише товари вказаного типу (Electronics, Clothing ...).
+     * T обмежений Product, тому передати, наприклад, String.class неможливо.
+     */
+    public <T extends Product> List<T> getProductsByType(Class<T> type) {
+        if (type == null) {
+            throw new IllegalArgumentException("Тип товару не може бути null");
+        }
+        return products.stream()
+                .filter(type::isInstance) // посилання на метод
+                .map(type::cast)          // безпечне приведення типу
+                .toList();
+    }
+
+    /** Викликається з різних потоків — тому потокобезпечна колекція. */
+    public void markProcessed(Product product) {
+        processedOrders.add(product);
+    }
+
+    public List<Product> getProcessedOrders() {
+        return List.copyOf(processedOrders);
     }
 }

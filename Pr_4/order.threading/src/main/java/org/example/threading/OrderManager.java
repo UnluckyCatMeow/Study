@@ -8,55 +8,64 @@ import org.example.storage.OrderRepository;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
+/**
+ * Керування потоками обробки замовлень.
+ */
 public class OrderManager {
+    private static final int THREAD_COUNT = 3;
+
     private final OrderRepository repository;
 
     public OrderManager(OrderRepository repository) {
         this.repository = repository;
     }
 
+    /** Паралельна обробка всіх замовлень у пулі з THREAD_COUNT потоків. */
     public void processOrdersConcurrently() {
         List<Product> products = repository.getProducts();
 
-        try (ExecutorService executor = Executors.newFixedThreadPool(3)) {
+        try (ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT)) {
             for (Product product : products) {
                 Runnable task = () -> {
-                    try {
-                        OrderProcessor<Product> processor = new OrderProcessor<>(product);
-                        processor.processOrder();
-                    } catch (OrderProcessingException e) {
-                        System.err.println("Помилка обробки: " + e.getMessage());
+                    OrderProcessor<Product> processor = new OrderProcessor<>(product);
+                    if (processor.processSafely()) {
+                        repository.markProcessed(product);
                     }
                 };
                 executor.submit(task);
             }
-
-            executor.shutdown();
-            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
-                executor.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            System.err.println("Виконання потоків було перервано.");
         }
+        System.out.println("Успішно оброблено: " + repository.getProcessedOrders().size()
+                + " з " + products.size());
+    }
+
+    public <T extends Product> void processByType(Class<T> type) {
+        System.out.println("\n--- Обробка замовлень типу " + type.getSimpleName() + " ---");
+
+        List<T> typedProducts = repository.getProductsByType(type);
+        typedProducts.stream()
+                .map(OrderProcessor::new)
+                .forEach(OrderProcessor::processSafely);
     }
 
     public void filterAndProcessExpensiveOrders(double threshold) {
         System.out.println("\n--- Фільтрація та обробка дорогих товарів (> $" + threshold + ") ---");
 
-        List<Product> products = repository.getProducts();
+        repository.getProducts().stream()
+                .filter(p -> p.getPrice() > threshold)
+                .map(OrderProcessor::new)
+                .forEach(OrderProcessor::processSafely);
+    }
 
-        products.stream()
-                .filter(p -> p.getPrice() > threshold) // залишає товари дорожчі за поріг
-                .map(OrderProcessor::new)              // Посилання на конструктор (Method Reference)
-                .forEach(processor -> {
-                    try {
-                        processor.processOrder();
-                    } catch (OrderProcessingException e) {
-                        System.err.println(e.getMessage());
-                    }
-                });
+    /** Демонстрація обробки виключення при роботі з узагальненими типами. */
+    public <T extends Product> void tryProcessAs(Product product, Class<T> type) {
+        System.out.println("\n--- Спроба обробити \"" + product.getName() + "\" як " + type.getSimpleName() + " ---");
+        try {
+            OrderProcessor<T> processor = OrderProcessor.forType(product, type);
+            processor.processOrder();
+        } catch (OrderProcessingException e) {
+            System.err.println("Помилка типу: " + e.getMessage());
+        }
     }
 }

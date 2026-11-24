@@ -1,0 +1,3 @@
+module-info.class
+org\example\processing\OrderProcessor.class
+org\example\processing\internal\OrderValidator.class

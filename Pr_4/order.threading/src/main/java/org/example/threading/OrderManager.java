@@ -22,7 +22,6 @@ public class OrderManager {
 
         try (ExecutorService executor = Executors.newFixedThreadPool(3)) {
             for (Product product : products) {
-                // Використання лямбда-виразів для завдань потоків
                 Runnable task = () -> {
                     try {
                         OrderProcessor<Product> processor = new OrderProcessor<>(product);
@@ -50,7 +49,7 @@ public class OrderManager {
         List<Product> products = repository.getProducts();
 
         products.stream()
-                .filter(p -> p.getPrice() > threshold) // Лямбда-фільтрація
+                .filter(p -> p.getPrice() > threshold) // залишає товари дорожчі за поріг
                 .map(OrderProcessor::new)              // Посилання на конструктор (Method Reference)
                 .forEach(processor -> {
                     try {
